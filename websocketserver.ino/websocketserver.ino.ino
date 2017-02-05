@@ -10,6 +10,9 @@
 // Transparent Serial Bridge code from Marcus https://github.com/Links2004/arduinoWebSockets/issues/61
 
 WebSocketsServer webSocket = WebSocketsServer(80);
+WiFiManager wifiManager;
+int loopCount = 0;
+
 
 #define SEND_SERIAL_TIME (50)
 
@@ -112,7 +115,9 @@ void setup()
 
 //    Serial1.printf("[SETUP] HEAP: %d\n", ESP.getFreeHeap());
 
-    WiFiManager wifiManager;
+    pinMode(0, INPUT_PULLUP);
+
+    //WiFiManager wifiManager;
     //wifiManager.resetSettings();    
         
     wifiManager.autoConnect("Emblaser2");
@@ -134,5 +139,15 @@ void loop()
 {
     ArduinoOTA.handle();
     term.loop();
-    webSocket.loop(); 
+    webSocket.loop();
+    if (loopCount > 10){
+      if (digitalRead(0) == LOW) {
+        wifiManager.resetSettings();
+        delay(1000);   
+        ESP.restart();
+        //software_Reset();
+      }
+      loopCount = 0;
+    }
+    loopCount++;
 }
