@@ -13,7 +13,6 @@ WebSocketsServer webSocket = WebSocketsServer(80);
 WiFiManager wifiManager;
 int loopCount = 0;
 
-
 #define SEND_SERIAL_TIME (50)
 
 class SerialTerminal {
@@ -22,7 +21,6 @@ class SerialTerminal {
             _lastRX = 0;
             resetBuffer();
             Serial.begin(115200);
-
         }
 
         void loop() {
@@ -92,6 +90,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         case WStype_TEXT:
 //            Serial1.printf("[%u] get Text: %s\n", num, payload);
             if(lenght > 0) {
+                String command = String((const char *)payload);
+                if (command.indexOf('resetWiFi') != -1){
+                    webSocket.sendTXT(num, "Resetting WiFi settings...");
+                    wifiManager.resetSettings();
+                    delay(1000);   
+                    ESP.restart();
+                }
                 Serial.write((const char *) (payload), (lenght));
             }
             break;
@@ -141,13 +146,12 @@ void loop()
     term.loop();
     webSocket.loop();
     if (loopCount > 10){
-      if (digitalRead(0) == LOW) {
-        wifiManager.resetSettings();
-        delay(1000);   
-        ESP.restart();
-        //software_Reset();
-      }
-      loopCount = 0;
+        if (digitalRead(0) == LOW) {
+            wifiManager.resetSettings();
+            delay(1000);   
+            ESP.restart();
+        }
+        loopCount = 0;
     }
     loopCount++;
 }

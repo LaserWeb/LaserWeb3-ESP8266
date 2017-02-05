@@ -17,8 +17,6 @@
 
 `6.`  Upload the Sketch https://github.com/openhardwarecoza/LaserWeb3/blob/master/ESP8266%20Wifi%20Bridge/websocketserver.ino/websocketserver.ino.ino
 
-`6.1`  Note after testing, please comment out https://github.com/openhardwarecoza/LaserWeb3/blob/master/ESP8266%20Wifi%20Bridge/websocketserver.ino/websocketserver.ino.ino#L126 - I delete the saved AP details on each reboot while testing to make sure the WifiManager starts. This is unwanted in general use, so comment out line 126 with // in front
-
 `7.`  Connect the TX of the ESP8266 to RX of the Smoothie, and RX of the ESP8266 to TX of the Smoothie. Power up the ESP and Smoothie
 
 `8.`  Connect to the Emblaser2 AP to connect the ESP to your local Wifi, then switch back to your local wifi (Animation below shows the details)
@@ -28,3 +26,8 @@
 `10.` In LaserWeb, set it to ESP8266, and connect to the IP of the ESP (Note, I will add an IP scanner soon. For now, check on your DHCP server which IP was dished out)
 
 ![Setting Up Wifi](wifibridge.gif)
+
+
+NOTE: To reset the Wifi settings you can:
+- Connect GPIO0 of the ESP8266 to GND (for 1-2s) or 
+- If WiFi is still connected: Send `resetWiFi` via websocket
