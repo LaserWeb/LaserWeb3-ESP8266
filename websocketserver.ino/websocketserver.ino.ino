@@ -12,6 +12,9 @@
 WebSocketsServer webSocket = WebSocketsServer(80);
 WiFiManager wifiManager;
 int loopCount = 0;
+int resetCount = 0;
+int RESET_PIN = 0; // = GPIO0 on nodeMCU
+bool socketConnected = false;
 
 #define SEND_SERIAL_TIME (50)
 
@@ -78,10 +81,12 @@ SerialTerminal term;
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) {
     switch(type) {
         case WStype_DISCONNECTED:
+            socketConnected = false;
 //            Serial1.printf("[%u] Disconnected!\n", num);
             break;
         case WStype_CONNECTED: {
             IPAddress ip = webSocket.remoteIP(num);
+            socketConnected = true;
 //            Serial1.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
             // send message to client
             webSocket.sendTXT(num, "Connected");
@@ -93,9 +98,10 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
                 String command = String((const char *)payload);
                 if (command.indexOf('resetWiFi') != -1){
                     webSocket.sendTXT(num, "Resetting WiFi settings...");
-                    wifiManager.resetSettings();
-                    delay(1000);   
-                    ESP.restart();
+                    delay(500);   
+                    //wifiManager.resetSettings();
+                    delay(100);
+                    //ESP.restart();
                 }
                 Serial.write((const char *) (payload), (lenght));
             }
@@ -120,7 +126,7 @@ void setup()
 
 //    Serial1.printf("[SETUP] HEAP: %d\n", ESP.getFreeHeap());
 
-    pinMode(0, INPUT_PULLUP);
+    pinMode(RESET_PIN, INPUT_PULLUP);
 
     //WiFiManager wifiManager;
     //wifiManager.resetSettings();    
@@ -145,13 +151,26 @@ void loop()
     ArduinoOTA.handle();
     term.loop();
     webSocket.loop();
-    if (loopCount > 10){
-        if (digitalRead(0) == LOW) {
-            wifiManager.resetSettings();
-            delay(1000);   
-            ESP.restart();
+
+    if (socketConnected == false){
+        //check every 10 loops
+        if (loopCount > 100){
+            loopCount = 0;
+            // if GPIO0 is LOW for 10 times -> reset settings
+            if (resetCount > 10){
+                resetCount = 0;
+                //wifiManager.resetSettings();
+                delay(100);   
+                //ESP.restart();
+            } else {
+                if (digitalRead(RESET_PIN) == LOW) {
+                    resetCount++;
+                } else {
+                    resetCount = 0;
+                }
+            }
+        } else {
+            loopCount++;
         }
-        loopCount = 0;
     }
-    loopCount++;
 }
