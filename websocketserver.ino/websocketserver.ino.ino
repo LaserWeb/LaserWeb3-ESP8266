@@ -4,12 +4,23 @@
 #include <Hash.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
-#include <ArduinoOTA.h>
+
 
 // Transparent Serial Bridge code from Marcus https://github.com/Links2004/arduinoWebSockets/issues/61
 
-WebSocketsServer webSocket = WebSocketsServer(80);
+ESP8266WebServer httpServer(80);
+ESP8266HTTPUpdateServer httpUpdater;
+const char* host = "webupdate";
+const char* update_path = "/firmware";
+const char* update_username = "admin";
+const char* update_password = "admin";
+
+
+WebSocketsServer webSocket = WebSocketsServer(81);
+
+
 WiFiManager wifiManager;
 int loopCount = 0;
 int resetCount = 0;
@@ -136,21 +147,21 @@ void setup()
     webSocket.begin();
     webSocket.onEvent(webSocketEvent);
 
+    httpUpdater.setup(&httpServer, update_path, update_username, update_password);
+    httpServer.begin();
+
     term.setup();
 
     // disable WiFi sleep for more performance
     WiFi.setSleepMode(WIFI_NONE_SLEEP);
-
-    ArduinoOTA.setHostname("Emblaser2");
-    ArduinoOTA.begin();
 }
 
 
 void loop()
 {
-    ArduinoOTA.handle();
     term.loop();
     webSocket.loop();
+    httpServer.handleClient();
 
     if (socketConnected == false){
         //check every 10 loops
