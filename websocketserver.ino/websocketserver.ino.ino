@@ -107,9 +107,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 //            Serial1.printf("[%u] get Text: %s\n", num, payload);
             if(lenght > 0) {
                 String command = String((const char *)payload);
-                if (command.indexOf('resetWiFi') != -1){
+                if (command.indexOf("resetWiFi") != -1){
                     webSocket.sendTXT(num, "Resetting WiFi settings...");
-                    delay(500);   
+                    delay(500);
                     //wifiManager.resetSettings();
                     delay(100);
                     //ESP.restart();
