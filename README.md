@@ -1,4 +1,4 @@
-#LW3 is obsolete. Please refer to https://github.com/LaserWeb/LaserWeb4
+# LW3 is obsolete. Please refer to https://github.com/LaserWeb/LaserWeb4
 
 
 (note instructions written for Windows, but may equally well be used for other O/S)
